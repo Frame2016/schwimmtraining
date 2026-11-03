@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schwimmtraining ziehen</title>
+  <style>
+    :root {
+      font-family: system-ui, sans-serif;
+      color: #17202a;
+      background: #f3f5f7;
+    }
+
+    body {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .intro {
+      text-align: center;
+      margin: 0 0 24px;
+      color: #4b5563;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(0.94);
+    }
+
+    .draw-all {
+      background: #243447;
+      color: white;
+    }
+
+    .reset {
+      background: #dce2e8;
+      color: #17202a;
+    }
+
+    .blocks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .block {
+      min-height: 230px;
+      padding: 18px;
+      border: 3px solid;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .green {
+      background: #1b5e20;
+      border-color: #124518;
+      color: white;
+    }
+
+    .blue {
+      background: #3d82f6;
+      border-color: #205fc7;
+      color: white;
+    }
+
+    .orange {
+      background: #ffad42;
+      border-color: #d98111;
+      color: #1b1b1b;
+    }
+
+    .block h2 {
+      margin: 0 0 14px;
+    }
+
+    .result {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .option-number {
+      font-size: 0.9rem;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-top: 8px;
+    }
+
+    .draw-one {
+      margin-top: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #17202a;
+    }
+
+    @media (max-width: 700px) {
+      .blocks {
+        grid-template-columns: 1fr;
+      }
+
+      .block {
+        min-height: 190px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Schwimmtraining</h1>
+  <p class="intro">Ziehe je eine zufällige Option für jeden der drei Blöcke.</p>
+
+  <div class="controls">
+    <button class="draw-all" onclick="drawAll()">Alle drei Blöcke ziehen</button>
+    <button class="reset" onclick="resetAll()">Zurücksetzen</button>
+  </div>
+
+  <main class="blocks">
+    <section class="block green">
+      <h2>Block Grün</h2>
+      <div class="result" id="result-green">Noch nicht gezogen</div>
+      <button class="draw-one" onclick="drawOne('green')">Grün ziehen</button>
+    </section>
+
+    <section class="block blue">
+      <h2>Block Blau</h2>
+      <div class="result" id="result-blue">Noch nicht gezogen</div>
+      <button class="draw-one" onclick="drawOne('blue')">Blau ziehen</button>
+    </section>
+
+    <section class="block orange">
+      <h2>Block Orange</h2>
+      <div class="result" id="result-orange">Noch nicht gezogen</div>
+      <button class="draw-one" onclick="drawOne('orange')">Orange ziehen</button>
+    </section>
+  </main>
+
+  <script>
+    const options = {
+      green: [
+        "200m (30s)",
+        "100m (30s)",
+        "125m\n75m (15s) | 50m (30s)",
+        "400m (60s)",
+        "Dauerschwimmen",
+        "50m (20s)",
+        "50m (30s)"
+      ],
+      blue: [
+        "200m (30s)",
+        "100m (30s)",
+        "125m\n75m (15s) | 50m (30s)",
+        "400m (60s)",
+        "Dauerschwimmen",
+        "50m (20s)",
+        "50m (30s)"
+      ],
+      orange: [
+        "50m\n25m Sprint | 25m locker",
+        "50m\n25m Sprint | 25m tauchen (20s)",
+        "50m\n25m Tauchen | 25m Sprint (30s)",
+        "50m (10s)",
+        "50m (60s)"
+      ]
+    };
+
+    function drawOne(color) {
+      const list = options[color];
+      const index = Math.floor(Math.random() * list.length);
+
+      document.getElementById(`result-${color}`).innerHTML =
+        `${escapeHtml(list[index])}<div class="option-number">Option ${index + 1} von ${list.length}</div>`;
+    }
+
+    function drawAll() {
+      drawOne("green");
+      drawOne("blue");
+      drawOne("orange");
+    }
+
+    function resetAll() {
+      for (const color of Object.keys(options)) {
+        document.getElementById(`result-${color}`).textContent = "Noch nicht gezogen";
+      }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+  </script>
+</body>
+</html>
+```
