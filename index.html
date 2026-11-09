@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Schwimmtraining ziehen</title>
+
   <style>
     :root {
       font-family: system-ui, sans-serif;
@@ -12,7 +13,7 @@
     }
 
     body {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 24px;
     }
@@ -49,6 +50,11 @@
       filter: brightness(0.94);
     }
 
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
     .draw-all {
       background: #243447;
       color: white;
@@ -61,7 +67,7 @@
 
     .blocks {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 16px;
     }
 
@@ -82,12 +88,6 @@
       color: white;
     }
 
-    .blue {
-      background: #3d82f6;
-      border-color: #205fc7;
-      color: white;
-    }
-
     .orange {
       background: #ffad42;
       border-color: #d98111;
@@ -102,7 +102,7 @@
       flex: 1;
       display: grid;
       place-items: center;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 700;
       line-height: 1.5;
       white-space: pre-line;
@@ -121,7 +121,13 @@
       color: #17202a;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 900px) {
+      .blocks {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
       .blocks {
         grid-template-columns: 1fr;
       }
@@ -132,32 +138,54 @@
     }
   </style>
 </head>
+
 <body>
   <h1>Schwimmtraining</h1>
-  <p class="intro">Ziehe je eine zufällige Option für jeden der drei Blöcke.</p>
+  <p class="intro">
+    Ziehe je eine zufällige Option für jeden der vier Blöcke.
+    Innerhalb der grünen und orangenen Blöcke wird nichts doppelt gezogen.
+  </p>
 
   <div class="controls">
-    <button class="draw-all" onclick="drawAll()">Alle drei Blöcke ziehen</button>
-    <button class="reset" onclick="resetAll()">Zurücksetzen</button>
+    <button class="draw-all" onclick="drawAll()">
+      Alle vier Blöcke ziehen
+    </button>
+    <button class="reset" onclick="resetAll()">
+      Zurücksetzen
+    </button>
   </div>
 
   <main class="blocks">
     <section class="block green">
-      <h2>Block Grün</h2>
-      <div class="result" id="result-green">Noch nicht gezogen</div>
-      <button class="draw-one" onclick="drawOne('green')">Grün ziehen</button>
-    </section>
-
-    <section class="block blue">
-      <h2>Block Blau</h2>
-      <div class="result" id="result-blue">Noch nicht gezogen</div>
-      <button class="draw-one" onclick="drawOne('blue')">Blau ziehen</button>
+      <h2>Grün ohne Paddles</h2>
+      <div class="result" id="result-green-no-paddles">Noch nicht gezogen</div>
+      <button class="draw-one" onclick="drawOne('green-no-paddles')">
+        Grün ziehen
+      </button>
     </section>
 
     <section class="block orange">
-      <h2>Block Orange</h2>
-      <div class="result" id="result-orange">Noch nicht gezogen</div>
-      <button class="draw-one" onclick="drawOne('orange')">Orange ziehen</button>
+      <h2>Sprint ohne Paddles</h2>
+      <div class="result" id="result-sprint-no-paddles">Noch nicht gezogen</div>
+      <button class="draw-one" onclick="drawOne('sprint-no-paddles')">
+        Sprint ziehen
+      </button>
+    </section>
+
+    <section class="block green">
+      <h2>Grün mit Paddles</h2>
+      <div class="result" id="result-green-with-paddles">Noch nicht gezogen</div>
+      <button class="draw-one" onclick="drawOne('green-with-paddles')">
+        Grün ziehen
+      </button>
+    </section>
+
+    <section class="block orange">
+      <h2>Sprint mit Paddles</h2>
+      <div class="result" id="result-sprint-with-paddles">Noch nicht gezogen</div>
+      <button class="draw-one" onclick="drawOne('sprint-with-paddles')">
+        Sprint ziehen
+      </button>
     </section>
   </main>
 
@@ -172,15 +200,7 @@
         "50m (20s)",
         "50m (30s)"
       ],
-      blue: [
-        "200m (30s)",
-        "100m (30s)",
-        "125m\n75m (15s) | 50m (30s)",
-        "400m (60s)",
-        "Dauerschwimmen",
-        "50m (20s)",
-        "50m (30s)"
-      ],
+
       orange: [
         "50m\n25m Sprint | 25m locker",
         "50m\n25m Sprint | 25m tauchen (20s)",
@@ -190,23 +210,73 @@
       ]
     };
 
-    function drawOne(color) {
-      const list = options[color];
-      const index = Math.floor(Math.random() * list.length);
+    const blockSettings = {
+      "green-no-paddles": {
+        pool: "green",
+        resultId: "result-green-no-paddles"
+      },
+      "sprint-no-paddles": {
+        pool: "orange",
+        resultId: "result-sprint-no-paddles"
+      },
+      "green-with-paddles": {
+        pool: "green",
+        resultId: "result-green-with-paddles"
+      },
+      "sprint-with-paddles": {
+        pool: "orange",
+        resultId: "result-sprint-with-paddles"
+      }
+    };
 
-      document.getElementById(`result-${color}`).innerHTML =
-        `${escapeHtml(list[index])}<div class="option-number">Option ${index + 1} von ${list.length}</div>`;
+    const usedOptions = {
+      green: new Set(),
+      orange: new Set()
+    };
+
+    function drawOne(blockName) {
+      const settings = blockSettings[blockName];
+      const list = options[settings.pool];
+      const availableIndices = [];
+
+      for (let index = 0; index < list.length; index++) {
+        if (!usedOptions[settings.pool].has(index)) {
+          availableIndices.push(index);
+        }
+      }
+
+      const resultElement = document.getElementById(settings.resultId);
+
+      if (availableIndices.length === 0) {
+        resultElement.textContent = "Keine weitere Option verfügbar";
+        return;
+      }
+
+      const randomPosition = Math.floor(Math.random() * availableIndices.length);
+      const index = availableIndices[randomPosition];
+
+      usedOptions[settings.pool].add(index);
+
+      resultElement.innerHTML =
+        `${escapeHtml(list[index])}` +
+        `<div class="option-number">Option ${index + 1} von ${list.length}</div>`;
     }
 
     function drawAll() {
-      drawOne("green");
-      drawOne("blue");
-      drawOne("orange");
+      drawOne("green-no-paddles");
+      drawOne("sprint-no-paddles");
+      drawOne("green-with-paddles");
+      drawOne("sprint-with-paddles");
     }
 
     function resetAll() {
-      for (const color of Object.keys(options)) {
-        document.getElementById(`result-${color}`).textContent = "Noch nicht gezogen";
+      for (const pool of Object.keys(usedOptions)) {
+        usedOptions[pool].clear();
+      }
+
+      for (const settings of Object.values(blockSettings)) {
+        document.getElementById(settings.resultId).textContent =
+          "Noch nicht gezogen";
       }
     }
 
@@ -222,4 +292,3 @@
   </script>
 </body>
 </html>
-```
